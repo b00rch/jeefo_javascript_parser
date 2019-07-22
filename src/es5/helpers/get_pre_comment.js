@@ -16,9 +16,9 @@
 // ignore:end
 
 module.exports = function get_pre_comment (parser) {
-    if (parser.current_symbol !== null && parser.current_symbol.id !== "Comment") {
+    if (parser.current_ast_node !== null && parser.current_ast_node.id !== "Comment") {
         parser.throw_unexpected_token();
     }
 
-    return parser.current_symbol;
+    return parser.current_ast_node;
 };

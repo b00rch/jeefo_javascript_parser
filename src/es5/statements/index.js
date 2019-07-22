@@ -14,24 +14,24 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-module.exports = function register_statement_symbol_definitions (symbol_table) {
-    symbol_table.register_symbol_definition(require("./empty_statement"));
-    symbol_table.register_symbol_definition(require("./block_statement"));
-    symbol_table.register_symbol_definition(require("./labelled_statement"));
-    symbol_table.register_symbol_definition(require("./expression_statement"));
+module.exports = function register_statement_ast_node_definitions (es5_ast_nodes) {
+    es5_ast_nodes.register_ast_node_definition(require("./empty_statement"));
+    es5_ast_nodes.register_ast_node_definition(require("./block_statement"));
+    es5_ast_nodes.register_ast_node_definition(require("./labelled_statement"));
+    es5_ast_nodes.register_ast_node_definition(require("./expression_statement"));
 
-    symbol_table.register_reserved_word("do"       , require("./do_while_statement"));
-    symbol_table.register_reserved_word("var"      , require("./variable_declaration_list_statement"));
-    symbol_table.register_reserved_word("for"      , require("./for_statement"));
-    symbol_table.register_reserved_word("with"     , require("./with_statement"));
-    symbol_table.register_reserved_word("while"    , require("./while_statement"));
-    symbol_table.register_reserved_word("throw"    , require("./throw_statement"));
-    symbol_table.register_reserved_word("break"    , require("./break_statement"));
-    symbol_table.register_reserved_word("return"   , require("./return_statement"));
-    symbol_table.register_reserved_word("continue" , require("./continue_statement"));
-    symbol_table.register_reserved_word("debugger" , require("./debugger_statement"));
+    es5_ast_nodes.register_reserved_word("do"       , require("./do_while_statement"));
+    es5_ast_nodes.register_reserved_word("var"      , require("./variable_declaration_list_statement"));
+    es5_ast_nodes.register_reserved_word("for"      , require("./for_statement"));
+    es5_ast_nodes.register_reserved_word("with"     , require("./with_statement"));
+    es5_ast_nodes.register_reserved_word("while"    , require("./while_statement"));
+    es5_ast_nodes.register_reserved_word("throw"    , require("./throw_statement"));
+    es5_ast_nodes.register_reserved_word("break"    , require("./break_statement"));
+    es5_ast_nodes.register_reserved_word("return"   , require("./return_statement"));
+    es5_ast_nodes.register_reserved_word("continue" , require("./continue_statement"));
+    es5_ast_nodes.register_reserved_word("debugger" , require("./debugger_statement"));
 
-    require("./if_statement")(symbol_table);
-    require("./try_statement")(symbol_table);
-    require("./switch_statement")(symbol_table);
+    require("./if_statement")(es5_ast_nodes);
+    require("./try_statement")(es5_ast_nodes);
+    require("./switch_statement")(es5_ast_nodes);
 };

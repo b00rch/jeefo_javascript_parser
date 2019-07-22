@@ -27,7 +27,7 @@ module.exports = {
     precedence : 31,
 
     is         : (token, parser) => parser.current_state === states_enum.statement,
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         const pre_comment = get_pre_comment(parser);
 
         parser.prepare_next_state("expression", true);
@@ -35,12 +35,12 @@ module.exports = {
         const expression = get_surrounded_expression(parser);
 
         parser.prepare_next_state(null, true);
-        const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.expression  = expression;
-        symbol.statement   = statement;
-        symbol.pre_comment = pre_comment;
-        symbol.start       = get_start_position(pre_comment, current_token);
-        symbol.end         = statement.end;
+        ast_node.expression  = expression;
+        ast_node.statement   = statement;
+        ast_node.pre_comment = pre_comment;
+        ast_node.start       = get_start_position(pre_comment, current_token);
+        ast_node.end         = statement.end;
     }
 };

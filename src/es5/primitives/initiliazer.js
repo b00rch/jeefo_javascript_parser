@@ -15,20 +15,20 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 // ignore:end
 
 const get_start_position      = require("../helpers/get_start_position"),
-      value_symbol_definition = require("./value_symbol_definition");
+      value_ast_node_definition = require("./value_ast_node_definition");
 
-module.exports = (symbol, current_token, parser) => {
+module.exports = (ast_node, current_token, parser) => {
     let pre_comment = null;
-    if (parser.current_symbol) {
-        if (parser.current_symbol.id === "Comment") {
-            pre_comment = parser.current_symbol;
+    if (parser.current_ast_node) {
+        if (parser.current_ast_node.id === "Comment") {
+            pre_comment = parser.current_ast_node;
         } else {
             parser.throw_unexpected_token();
         }
     }
 
-    symbol.value       = value_symbol_definition.generate_new_symbol(current_token);
-    symbol.pre_comment = pre_comment;
-    symbol.start       = get_start_position(pre_comment) || current_token.start;
-    symbol.end         = current_token.end;
+    ast_node.value       = value_ast_node_definition.generate_new_ast_node(current_token);
+    ast_node.pre_comment = pre_comment;
+    ast_node.start       = get_start_position(pre_comment) || current_token.start;
+    ast_node.end         = current_token.end;
 };

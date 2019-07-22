@@ -14,8 +14,8 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-module.exports = function register_operators (symbol_table) {
-    require("./unary_operators")(symbol_table);
-    require("./binary_operators")(symbol_table);
-    symbol_table.register_symbol_definition(require("./conditional_operator"));
+module.exports = function register_operators (es5_ast_nodes) {
+    require("./unary_operators")(es5_ast_nodes);
+    require("./binary_operators")(es5_ast_nodes);
+    es5_ast_nodes.register_ast_node_definition(require("./conditional_operator"));
 };

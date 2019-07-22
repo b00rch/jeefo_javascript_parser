@@ -27,18 +27,18 @@ module.exports = {
     is : (current_token, parser) =>
         is_expression(parser) && current_token.value === '.',
 
-	initialize : (symbol, current_token, parser) => {
-        const object   = parser.current_symbol;
-        const operator = operator_definition.generate_new_symbol(parser);
+	initialize : (ast_node, current_token, parser) => {
+        const object   = parser.current_ast_node;
+        const operator = operator_definition.generate_new_ast_node(parser);
 
         prepare_next_expression(parser, true);
-        parser.expect("identifier", parser => parser.next_symbol_definition.id === "Identifier");
-        const property = parser.get_next_symbol(symbol.precedence);
+        parser.expect("identifier", parser => parser.next_ast_node_definition.id === "Identifier");
+        const property = parser.get_next_ast_node(ast_node.precedence);
 
-        symbol.object   = object;
-        symbol.operator = operator;
-        symbol.property = property;
-        symbol.start    = object.start;
-        symbol.end      = property.end;
+        ast_node.object   = object;
+        ast_node.operator = operator;
+        ast_node.property = property;
+        ast_node.start    = object.start;
+        ast_node.end      = property.end;
     },
 };

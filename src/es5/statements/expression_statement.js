@@ -49,7 +49,7 @@ module.exports = {
                         if (expression_keywords.includes(token.value)) {
                             return true;
                         }
-                        return parser.symbol_table.reserved_words[token.value] === undefined;
+                        return parser.ast_nodes.reserved_words[token.value] === undefined;
                     case "Delimiter" :
                         return expression_delimiters.includes(token.value);
                     case "Operator" :
@@ -60,41 +60,41 @@ module.exports = {
         return false;
     },
 
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         let terminator = null;
         const is_individual_block_statement = parser.current_state === states_enum.statement;
 
         parser.change_state("expression");
 
         // Labelled statement
-        if (parser.next_symbol_definition.id === "Identifier") {
-            parser.current_symbol   = parser.next_symbol_definition.generate_new_symbol(parser);
-            parser.previous_symbols = [parser.current_symbol];
-            parser.prepare_next_symbol_definition();
+        if (parser.next_ast_node_definition.id === "Identifier") {
+            parser.current_ast_node   = parser.next_ast_node_definition.generate_new_ast_node(parser);
+            parser.previous_ast_nodes = [parser.current_ast_node];
+            parser.prepare_next_ast_node_definition();
 
             if (parser.next_token !== null && parser.next_token.value === ':') {
-                symbol.identifier = parser.current_symbol;
-                symbol.delimiter  = parser.next_symbol_definition.generate_new_symbol(parser);
+                ast_node.identifier = parser.current_ast_node;
+                ast_node.delimiter  = parser.next_ast_node_definition.generate_new_ast_node(parser);
                 return parser.change_state("labelled_statement");
             }
         }
 
         parser.post_comment = null;
         const expression = get_right_value(parser, precedence_enum.TERMINATION);
-        parser.current_symbol = parser.post_comment;
+        parser.current_ast_node = parser.post_comment;
 
         if (parser.next_token !== null && parser.next_token.value === ';') {
             parser.change_state("delimiter");
-            terminator = parser.next_symbol_definition.generate_new_symbol(parser);
+            terminator = parser.next_ast_node_definition.generate_new_ast_node(parser);
         }
 
-        symbol.expression = expression;
-        symbol.terminator = terminator;
-        symbol.start      = expression.start;
-        symbol.end        = terminator ? terminator.end : expression.end;
+        ast_node.expression = expression;
+        ast_node.terminator = terminator;
+        ast_node.start      = expression.start;
+        ast_node.end        = terminator ? terminator.end : expression.end;
 
         if (is_individual_block_statement) {
-            parser.terminate(symbol);
+            parser.terminate(ast_node);
         }
     }
 };

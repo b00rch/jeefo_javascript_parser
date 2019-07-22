@@ -14,34 +14,34 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-const states_enum                 = require("../enums/states_enum"),
-      operator_definition         = require("../common/operator_definition"),
-      prepare_next_expression     = require("../helpers/prepare_next_expression"),
-      get_right_value             = require("../helpers/get_right_value"),
-      get_last_non_comment_symbol = require("../helpers/get_last_non_comment_symbol");
+const states_enum                   = require("../enums/states_enum"),
+      operator_definition           = require("../common/operator_definition"),
+      prepare_next_expression       = require("../helpers/prepare_next_expression"),
+      get_right_value               = require("../helpers/get_right_value"),
+      get_last_non_comment_ast_node = require("../helpers/get_last_non_comment_ast_node");
 
-module.exports = function register_binary_operators (symbol_table) {
+module.exports = function register_binary_operators (es5_ast_nodes) {
     const is_binary = parser => {
         switch (parser.current_state) {
             case states_enum.expression       :
             case states_enum.expression_no_in :
-                return get_last_non_comment_symbol(parser) !== null;
+                return get_last_non_comment_ast_node(parser) !== null;
         }
         return false;
     };
 
-    const initialize = (symbol, current_token, parser) => {
-        const left     = get_last_non_comment_symbol(parser, true);
-        const operator = operator_definition.generate_new_symbol(parser);
+    const initialize = (ast_node, current_token, parser) => {
+        const left     = get_last_non_comment_ast_node(parser, true);
+        const operator = operator_definition.generate_new_ast_node(parser);
 
         prepare_next_expression(parser, true);
-        const right = get_right_value(parser, symbol.precedence);
+        const right = get_right_value(parser, ast_node.precedence);
 
-        symbol.left        = left;
-        symbol.operator    = operator;
-        symbol.right       = right;
-        symbol.start       = left.start;
-        symbol.end         = right.end;
+        ast_node.left        = left;
+        ast_node.operator    = operator;
+        ast_node.right       = right;
+        ast_node.start       = left.start;
+        ast_node.end         = right.end;
     };
 
 	const operator_definitions = [
@@ -183,11 +183,11 @@ module.exports = function register_binary_operators (symbol_table) {
             return is_operator_expression(token) && is_binary(parser);
         };
 
-		symbol_table.register_symbol_definition(operator_definition);
+		es5_ast_nodes.register_ast_node_definition(operator_definition);
 	});
 
     // Division operator
-    symbol_table.register_symbol_definition({
+    es5_ast_nodes.register_ast_node_definition({
         id         : "Arithmetic operator",
         type       : "Binary operator",
         precedence : 14,
@@ -202,7 +202,7 @@ module.exports = function register_binary_operators (symbol_table) {
         initialize : initialize
     });
 
-    symbol_table.register_symbol_definition({
+    es5_ast_nodes.register_ast_node_definition({
         id         : "Assignment operator",
         type       : "Binary operator",
         precedence : 3,
@@ -214,16 +214,16 @@ module.exports = function register_binary_operators (symbol_table) {
             }
             return false;
         },
-        initialize : (symbol, token, parser) => {
+        initialize : (ast_node, token, parser) => {
             token.value += parser.tokenizer.streamer.get_next_character();
             token.end = parser.tokenizer.streamer.get_cursor();
 
-            initialize(symbol, token, parser);
+            initialize(ast_node, token, parser);
         }
     });
 
     // Binary in operator
-    symbol_table.register_reserved_word("in", {
+    es5_ast_nodes.register_reserved_word("in", {
         id         : "In operator",
         type       : "Binary operator",
         precedence : 11,
@@ -234,13 +234,13 @@ module.exports = function register_binary_operators (symbol_table) {
             }
 
             return parser.current_state === states_enum.expression
-                && get_last_non_comment_symbol(parser) !== null;
+                && get_last_non_comment_ast_node(parser) !== null;
         },
         initialize : initialize
     });
 
     // Binary instanceof operator
-    symbol_table.register_reserved_word("instanceof", {
+    es5_ast_nodes.register_reserved_word("instanceof", {
         id         : "Instanceof operator",
         type       : "Binary operator",
         precedence : 11,

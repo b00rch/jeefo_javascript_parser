@@ -14,42 +14,42 @@
 
 // ignore:end
 
-const SymbolDefinition   = require("@jeefo/parser/src/symbol_definition"),
+const ASTNodeDefinition   = require("@jeefo/parser/src/ast_node_definition"),
       get_start_position = require("../helpers/get_start_position");
 
-const parameter_symbol_definition = new SymbolDefinition({
+const parameter_ast_node_definition = new ASTNodeDefinition({
     id         : "Parameter",
     type       : "Primitive",
     precedence : 31,
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
-        parser.expect("identifier", parser => parser.next_symbol_definition.id === "Identifier");
-        const identifier = parser.next_symbol_definition.generate_new_symbol(parser);
+    initialize : (ast_node, current_token, parser) => {
+        parser.expect("identifier", parser => parser.next_ast_node_definition.id === "Identifier");
+        const identifier = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
-        const post_comment = parser.current_symbol;
+        const post_comment = parser.current_ast_node;
 
-        symbol.identifier   = identifier;
-        symbol.post_comment = post_comment;
-        symbol.start        = get_start_position(identifier.pre_comment, identifier);
-        symbol.end          = post_comment ? post_comment.end : identifier.end;
+        ast_node.identifier   = identifier;
+        ast_node.post_comment = post_comment;
+        ast_node.start        = get_start_position(identifier.pre_comment, identifier);
+        ast_node.end          = post_comment ? post_comment.end : identifier.end;
     }
 });
 
-const parameters_symbol_definition = new SymbolDefinition({
+const parameters_ast_node_definition = new ASTNodeDefinition({
     id         : "Parameters",
     type       : "Notation",
     precedence : 31,
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         parser.change_state("delimiter");
         const parameters       = [];
-        const open_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const open_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
 
         while (parser.next_token.value !== ')') {
-            const parameter = parameter_symbol_definition.generate_new_symbol(parser);
+            const parameter = parameter_ast_node_definition.generate_new_ast_node(parser);
             parameters.push(parameter);
 
             if (parser.next_token.value !== ')') {
@@ -60,16 +60,16 @@ const parameters_symbol_definition = new SymbolDefinition({
 
         parser.expect(')', parser => parser.next_token.value === ')');
         parser.change_state("delimiter");
-        const close_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const close_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
-        symbol.open_parenthesis  = open_parenthesis;
-        symbol.parameters        = parameters;
-        symbol.close_parenthesis = close_parenthesis;
-        symbol.start             = get_start_position(open_parenthesis.pre_comment, current_token);
-        symbol.end               = close_parenthesis.end;
+        ast_node.open_parenthesis  = open_parenthesis;
+        ast_node.parameters        = parameters;
+        ast_node.close_parenthesis = close_parenthesis;
+        ast_node.start             = get_start_position(open_parenthesis.pre_comment, current_token);
+        ast_node.end               = close_parenthesis.end;
     }
 });
 
 module.exports = function get_parameters (parser) {
-    return parameters_symbol_definition.generate_new_symbol(parser);
+    return parameters_ast_node_definition.generate_new_ast_node(parser);
 };

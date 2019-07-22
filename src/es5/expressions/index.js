@@ -15,10 +15,10 @@
 
 // ignore:end
 
-module.exports = function register_expression_symbol_definitions (symbol_table) {
-    symbol_table.register_symbol_definition(require("./grouping_expression"));
-    symbol_table.register_symbol_definition(require("./member_expression"));
-    symbol_table.register_symbol_definition(require("./computed_member_expression"));
-    symbol_table.register_symbol_definition(require("./function_call_expression"));
-    symbol_table.register_symbol_definition(require("./sequence_expression"));
+module.exports = function register_expression_ast_node_definitions (es5_ast_nodes) {
+    es5_ast_nodes.register_ast_node_definition(require("./grouping_expression"));
+    es5_ast_nodes.register_ast_node_definition(require("./member_expression"));
+    es5_ast_nodes.register_ast_node_definition(require("./computed_member_expression"));
+    es5_ast_nodes.register_ast_node_definition(require("./function_call_expression"));
+    es5_ast_nodes.register_ast_node_definition(require("./sequence_expression"));
 };

@@ -35,7 +35,7 @@ module.exports = function get_comma_separated_expressions (parser, terminator) {
         switch (parser.next_token.value) {
             case ',' :
                 parser.change_state("delimiter");
-                expressions.push(parser.next_symbol_definition.generate_new_symbol(parser));
+                expressions.push(parser.next_ast_node_definition.generate_new_ast_node(parser));
 
                 parser.prepare_next_state("expression", true);
                 break;

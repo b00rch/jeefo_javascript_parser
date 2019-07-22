@@ -14,16 +14,16 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-const capitalize                  = require("jeefo_utils/string/capitalize"),
-      states_enum                 = require("../enums/states_enum"),
-      is_expression               = require("../helpers/is_expression"),
-      get_pre_comment             = require("../helpers/get_pre_comment"),
-      get_start_position          = require("../helpers/get_start_position"),
-      get_last_non_comment_symbol = require("../helpers/get_last_non_comment_symbol");
+const capitalize                    = require("jeefo_utils/string/capitalize"),
+      states_enum                   = require("../enums/states_enum"),
+      is_expression                 = require("../helpers/is_expression"),
+      get_pre_comment               = require("../helpers/get_pre_comment"),
+      get_start_position            = require("../helpers/get_start_position"),
+      get_last_non_comment_ast_node = require("../helpers/get_last_non_comment_ast_node");
 
-module.exports = function register_unary_operators (symbol_table) {
+module.exports = function register_unary_operators (es5_ast_nodes) {
     const is_expression_state = (token, parser) => {
-        return is_expression(parser) && get_last_non_comment_symbol(parser) === null;
+        return is_expression(parser) && get_last_non_comment_ast_node(parser) === null;
     };
 
     const skeleton_expression_definition = {
@@ -32,13 +32,13 @@ module.exports = function register_unary_operators (symbol_table) {
     };
 
     // {{{1 New expression (18, 19)
-    symbol_table.register_reserved_word("new", {
+    es5_ast_nodes.register_reserved_word("new", {
 		id         : "New expression",
         type       : "Unary operator",
         precedence : 18,
 
         is         : is_expression_state,
-        initialize : (symbol, current_token, parser) => {
+        initialize : (ast_node, current_token, parser) => {
             const pre_comment = get_pre_comment(parser);
 
             let state_name = "expression";
@@ -46,16 +46,16 @@ module.exports = function register_unary_operators (symbol_table) {
                 state_name = "expression_no_in";
             }
             parser.prepare_next_state(state_name, true);
-            const expression = parser.get_next_symbol(symbol.precedence);
+            const expression = parser.get_next_ast_node(ast_node.precedence);
             if (expression.id === "Function call expression") {
-                symbol.precedence = 19;
+                ast_node.precedence = 19;
             }
 
-            symbol.token       = current_token;
-            symbol.expression  = expression;
-            symbol.pre_comment = pre_comment;
-            symbol.start       = get_start_position(pre_comment, current_token);
-            symbol.end         = expression.end;
+            ast_node.token       = current_token;
+            ast_node.expression  = expression;
+            ast_node.pre_comment = pre_comment;
+            ast_node.start       = get_start_position(pre_comment, current_token);
+            ast_node.end         = expression.end;
         }
     });
 
@@ -64,22 +64,22 @@ module.exports = function register_unary_operators (symbol_table) {
     skeleton_expression_definition.precedence = 16;
 
     // initialize
-    skeleton_expression_definition.initialize = (symbol, current_token, parser) => {
+    skeleton_expression_definition.initialize = (ast_node, current_token, parser) => {
         let state_name = "expression";
         if (parser.current_state === states_enum.expression_no_in) {
             state_name = "expression_no_in";
         }
         parser.prepare_next_state("expression", true);
 
-        symbol.token    = current_token;
-        symbol.argument = parser.get_next_symbol(symbol.precedence);
-        symbol.start    = current_token.start;
-        symbol.end      = symbol.argument.end;
+        ast_node.token    = current_token;
+        ast_node.argument = parser.get_next_ast_node(ast_node.precedence);
+        ast_node.start    = current_token.start;
+        ast_node.end      = ast_node.argument.end;
     };
 
     ["void", "typeof", "delete"].forEach(keyword => {
         skeleton_expression_definition.id = `${ capitalize(keyword) } operator`;
-        symbol_table.register_reserved_word(keyword, skeleton_expression_definition);
+        es5_ast_nodes.register_reserved_word(keyword, skeleton_expression_definition);
     });
 
     // {{{1 unary prefix operators (16)
@@ -143,7 +143,7 @@ module.exports = function register_unary_operators (symbol_table) {
     unary_prefix_operators.forEach(operator => {
         skeleton_expression_definition.id = `${ operator.id } operator`;
         skeleton_expression_definition.is = operator.is;
-        symbol_table.register_symbol_definition(skeleton_expression_definition);
+        es5_ast_nodes.register_ast_node_definition(skeleton_expression_definition);
     });
 
     // {{{1 Post increment, Post decrement (17)
@@ -153,8 +153,8 @@ module.exports = function register_unary_operators (symbol_table) {
             is : (token, parser) => {
                 // No line termination
                 if (token.value === "++" && is_expression(parser)) {
-                    const last_symbol = get_last_non_comment_symbol(parser);
-                    return last_symbol !== null && last_symbol.end.line === token.start.line;
+                    const last_ast_node = get_last_non_comment_ast_node(parser);
+                    return last_ast_node !== null && last_ast_node.end.line === token.start.line;
                 }
                 return false;
             }
@@ -163,8 +163,8 @@ module.exports = function register_unary_operators (symbol_table) {
             id : "decrement",
             is : (token, parser) => {
                 if (token.value === "--" && is_expression(parser)) {
-                    const last_symbol = get_last_non_comment_symbol(parser);
-                    return last_symbol !== null && last_symbol.end.line === token.start.line;
+                    const last_ast_node = get_last_non_comment_ast_node(parser);
+                    return last_ast_node !== null && last_ast_node.end.line === token.start.line;
                 }
                 return false;
             }
@@ -172,17 +172,17 @@ module.exports = function register_unary_operators (symbol_table) {
     ];
 
     skeleton_expression_definition.precedence = 17;
-    skeleton_expression_definition.initialize = (symbol, current_token, parser) => {
-        symbol.token    = current_token;
-        symbol.argument = parser.current_symbol;
-        symbol.start    = symbol.argument.start;
-        symbol.end      = current_token.end;
+    skeleton_expression_definition.initialize = (ast_node, current_token, parser) => {
+        ast_node.token    = current_token;
+        ast_node.argument = parser.current_ast_node;
+        ast_node.start    = ast_node.argument.start;
+        ast_node.end      = current_token.end;
     };
 
     postfix_operators.forEach(operator => {
         skeleton_expression_definition.id = `Postfix ${ operator.id } operator`;
         skeleton_expression_definition.is = operator.is;
-        symbol_table.register_symbol_definition(skeleton_expression_definition);
+        es5_ast_nodes.register_ast_node_definition(skeleton_expression_definition);
     });
     // }}}1
 };

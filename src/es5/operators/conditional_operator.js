@@ -15,11 +15,11 @@
 
 // ignore:end
 
-const precedence_enum             = require("../enums/precedence_enum"),
-      operator_definition         = require("../common/operator_definition"),
-      is_expression               = require("../helpers/is_expression"),
-      get_current_state_name      = require("../helpers/get_current_state_name"),
-      get_last_non_comment_symbol = require("../helpers/get_last_non_comment_symbol");
+const precedence_enum               = require("../enums/precedence_enum"),
+      operator_definition           = require("../common/operator_definition"),
+      is_expression                 = require("../helpers/is_expression"),
+      get_current_state_name        = require("../helpers/get_current_state_name"),
+      get_last_non_comment_ast_node = require("../helpers/get_last_non_comment_ast_node");
 
 module.exports = {
     id         : "Conditional operator",
@@ -29,28 +29,28 @@ module.exports = {
     is : (token, parser) =>
         token.value === '?'   &&
         is_expression(parser) &&
-        get_last_non_comment_symbol(parser) !== null,
+        get_last_non_comment_ast_node(parser) !== null,
 
-    initialize : (symbol, current_token, parser) => {
-        const condition         = parser.current_symbol;
+    initialize : (ast_node, current_token, parser) => {
+        const condition         = parser.current_ast_node;
         const expression_name   = get_current_state_name(parser);
-        const question_operator = operator_definition.generate_new_symbol(parser);
+        const question_operator = operator_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
-        const truthy_expression = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const truthy_expression = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
         parser.expect(':', parser => parser.next_token.value === ':');
-        const colon_operator = operator_definition.generate_new_symbol(parser);
+        const colon_operator = operator_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state(expression_name, true);
-        const falsy_expression = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const falsy_expression = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.condition         = condition;
-        symbol.question_operator = question_operator;
-        symbol.truthy_expression = truthy_expression;
-        symbol.colon_operator    = colon_operator;
-        symbol.falsy_expression  = falsy_expression;
-        symbol.start             = condition.start;
-        symbol.end               = falsy_expression.end;
+        ast_node.condition         = condition;
+        ast_node.question_operator = question_operator;
+        ast_node.truthy_expression = truthy_expression;
+        ast_node.colon_operator    = colon_operator;
+        ast_node.falsy_expression  = falsy_expression;
+        ast_node.start             = condition.start;
+        ast_node.end               = falsy_expression.end;
     }
 };

@@ -17,7 +17,7 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 const precedence_enum                 = require("../enums/precedence_enum"),
       is_expression                   = require("../helpers/is_expression"),
       get_current_state_name          = require("../helpers/get_current_state_name"),
-      get_last_non_comment_symbol     = require("../helpers/get_last_non_comment_symbol"),
+      get_last_non_comment_ast_node   = require("../helpers/get_last_non_comment_ast_node"),
       get_comma_separated_expressions = require("../helpers/get_comma_separated_expressions");
 
 module.exports = {
@@ -28,17 +28,17 @@ module.exports = {
 	is : (token, parser) => {
         return token.value === '('
             && is_expression(parser)
-            && get_last_non_comment_symbol(parser) === null;
+            && get_last_non_comment_ast_node(parser) === null;
     },
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         const expression_name = get_current_state_name(parser);
         parser.change_state("delimiter");
 
-        symbol.open_parenthesis  = parser.next_symbol_definition.generate_new_symbol(parser);
-        symbol.expression        = get_comma_separated_expressions(parser, ')');
-        symbol.close_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
-        symbol.start             = symbol.open_parenthesis.start;
-        symbol.end               = symbol.close_parenthesis.end;
+        ast_node.open_parenthesis  = parser.next_ast_node_definition.generate_new_ast_node(parser);
+        ast_node.expression        = get_comma_separated_expressions(parser, ')');
+        ast_node.close_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
+        ast_node.start             = ast_node.open_parenthesis.start;
+        ast_node.end               = ast_node.close_parenthesis.end;
 
         parser.prepare_next_state(expression_name, true);
     }

@@ -16,18 +16,18 @@
 
 const states_enum               = require("../enums/states_enum"),
       precedence_enum           = require("../enums/precedence_enum"),
-      SymbolDefinition          = require("@jeefo/parser/src/symbol_definition"),
+      ASTNodeDefinition          = require("@jeefo/parser/src/ast_node_definition"),
       get_pre_comment           = require("../helpers/get_pre_comment"),
       get_start_position        = require("../helpers/get_start_position"),
       get_surrounded_expression = require("../helpers/get_surrounded_expression");
 
-const case_block_definition = new SymbolDefinition({
+const case_block_definition = new ASTNodeDefinition({
     id         : "Case block",
     type       : "Statement",
     precedence : 31,
 
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         const pre_comment  = get_pre_comment(parser),
               case_clauses = [];
 
@@ -47,29 +47,29 @@ const case_block_definition = new SymbolDefinition({
                 default:
                     parser.throw_unexpected_token();
             }
-            case_clauses.push(parser.next_symbol_definition.generate_new_symbol(parser));
+            case_clauses.push(parser.next_ast_node_definition.generate_new_ast_node(parser));
         }
 
-        symbol.case_clauses = case_clauses;
-        symbol.pre_comment  = pre_comment;
-        symbol.start        = get_start_position(pre_comment, current_token);
-        symbol.end          = parser.next_token.end;
+        ast_node.case_clauses = case_clauses;
+        ast_node.pre_comment  = pre_comment;
+        ast_node.start        = get_start_position(pre_comment, current_token);
+        ast_node.end          = parser.next_token.end;
     }
 });
 
-module.exports = function register_switch_statement (symbol_table) {
-    symbol_table.register_reserved_word("case", {
+module.exports = function register_switch_statement (es5_ast_nodes) {
+    es5_ast_nodes.register_reserved_word("case", {
         id         : "Case clause",
         type       : "Statement",
         precedence : 31,
 
         is         : (token, parser) => parser.current_state === states_enum.case_clause,
-        initialize : (symbol, current_token, parser) => {
+        initialize : (ast_node, current_token, parser) => {
             const statements  = [],
                   pre_comment = get_pre_comment(parser);
 
             parser.prepare_next_state("expression", true);
-            const expression = parser.get_next_symbol(precedence_enum.TERMINATION);
+            const expression = parser.get_next_ast_node(precedence_enum.TERMINATION);
             if (parser.next_token === null) {
                 parser.throw_unexpected_end_of_stream();
             }
@@ -84,7 +84,7 @@ module.exports = function register_switch_statement (symbol_table) {
                 is_statement &= parser.next_token.value !== '}';
 
                 if (is_statement) {
-                    const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+                    const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
                     end = statement.end;
                     statements.push(statement);
 
@@ -94,21 +94,21 @@ module.exports = function register_switch_statement (symbol_table) {
                 }
             }
 
-            symbol.expression  = expression;
-            symbol.statements  = statements;
-            symbol.pre_comment = pre_comment;
-            symbol.start       = get_start_position(pre_comment, current_token);
-            symbol.end         = end;
+            ast_node.expression  = expression;
+            ast_node.statements  = statements;
+            ast_node.pre_comment = pre_comment;
+            ast_node.start       = get_start_position(pre_comment, current_token);
+            ast_node.end         = end;
         }
     });
 
-    symbol_table.register_reserved_word("default", {
+    es5_ast_nodes.register_reserved_word("default", {
         id         : "Default clause",
         type       : "Statement",
         precedence : 31,
 
         is         : (token, parser) => parser.current_state === states_enum.default_clause,
-        initialize : (symbol, current_token, parser) => {
+        initialize : (ast_node, current_token, parser) => {
             const statements  = [],
                   pre_comment = get_pre_comment(parser);
 
@@ -124,7 +124,7 @@ module.exports = function register_switch_statement (symbol_table) {
                 is_statement &= parser.next_token.value !== '}';
 
                 if (is_statement) {
-                    const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+                    const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
                     end = statement.end;
                     statements.push(statement);
 
@@ -134,20 +134,20 @@ module.exports = function register_switch_statement (symbol_table) {
                 }
             }
 
-            symbol.statements  = statements;
-            symbol.pre_comment = pre_comment;
-            symbol.start       = get_start_position(pre_comment, current_token);
-            symbol.end         = end;
+            ast_node.statements  = statements;
+            ast_node.pre_comment = pre_comment;
+            ast_node.start       = get_start_position(pre_comment, current_token);
+            ast_node.end         = end;
         }
     });
 
-    symbol_table.register_reserved_word("switch", {
+    es5_ast_nodes.register_reserved_word("switch", {
         id         : "Switch statement",
         type       : "Statement",
         precedence : 31,
 
         is         : (token, parser) => parser.current_state === states_enum.statement,
-        initialize : (symbol, current_token, parser) => {
+        initialize : (ast_node, current_token, parser) => {
             const pre_comment = get_pre_comment(parser);
 
             parser.prepare_next_state(null, true);
@@ -156,15 +156,15 @@ module.exports = function register_switch_statement (symbol_table) {
 
             parser.prepare_next_state(null, true);
             parser.expect('{', parser => parser.next_token.value === '{');
-            const case_block = case_block_definition.generate_new_symbol(parser);
+            const case_block = case_block_definition.generate_new_ast_node(parser);
 
-            symbol.expression  = expression;
-            symbol.case_block  = case_block;
-            symbol.pre_comment = pre_comment;
-            symbol.start       = get_start_position(pre_comment, current_token);
-            symbol.end         = case_block.end;
+            ast_node.expression  = expression;
+            ast_node.case_block  = case_block;
+            ast_node.pre_comment = pre_comment;
+            ast_node.start       = get_start_position(pre_comment, current_token);
+            ast_node.end         = case_block.end;
 
-            parser.terminate(symbol);
+            parser.terminate(ast_node);
         }
     });
 };
