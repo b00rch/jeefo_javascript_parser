@@ -34,16 +34,16 @@ module.exports = {
         return false;
     },
 
-	initialize : (symbol, current_token, parser) => {
+	initialize : (ast_node, current_token, parser) => {
         const statements   = [],
               is_statement = parser.current_state === states_enum.statement;
 
         parser.change_state("delimiter");
-        const open_curly_bracket = parser.next_symbol_definition.generate_new_symbol(parser);
+        const open_curly_bracket = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state(null, true);
 		while (parser.next_token.value !== '}') {
-            const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+            const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
             if (! parser.is_terminated) {
                 if (statement.id === "Comment") {
                     parser.terminate(statement);
@@ -56,16 +56,16 @@ module.exports = {
             parser.prepare_next_state(null, true);
 		}
 
-        const close_curly_bracket = parser.next_symbol_definition.generate_new_symbol(parser);
+        const close_curly_bracket = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
-        symbol.open_curly_bracket  = open_curly_bracket;
-        symbol.statements          = statements;
-        symbol.close_curly_bracket = close_curly_bracket;
-        symbol.start               = symbol.open_curly_bracket.start;
-        symbol.end                 = symbol.close_curly_bracket.end;
+        ast_node.open_curly_bracket  = open_curly_bracket;
+        ast_node.statements          = statements;
+        ast_node.close_curly_bracket = close_curly_bracket;
+        ast_node.start               = ast_node.open_curly_bracket.start;
+        ast_node.end                 = ast_node.close_curly_bracket.end;
 
         if (is_statement) {
-            parser.terminate(symbol);
+            parser.terminate(ast_node);
         }
     }
 };

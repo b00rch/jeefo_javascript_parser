@@ -16,7 +16,7 @@
 // ignore:end
 
 module.exports = function is_property_name (parser) {
-    switch (parser.next_symbol_definition.id) {
+    switch (parser.next_ast_node_definition.id) {
         case "Identifier"      :
         case "String literal"  :
         case "Numeric literal" :

@@ -14,15 +14,15 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-const get_last_non_comment_symbol = require("./get_last_non_comment_symbol");
+const get_last_non_comment_ast_node = require("./get_last_non_comment_ast_node");
 
 module.exports = function get_right_value (parser, left_precedence) {
-    let right_value = parser.get_next_symbol(left_precedence);
+    let right_value = parser.get_next_ast_node(left_precedence);
 
     if (right_value !== null && right_value.id === "Comment") {
         parser.post_comment = right_value;
 
-        return get_last_non_comment_symbol(parser, true);
+        return get_last_non_comment_ast_node(parser, true);
     }
 
     return right_value;

@@ -18,48 +18,48 @@ const JeefoParser      = require("@jeefo/parser"),
       states_enum      = require("./enums/states_enum"),
       es5_tokenizer    = require("./tokenizer"),
       ignore_comments  = require("./helpers/ignore_comments"),
-      es5_symbol_table = require("./symbol_table");
+      es5_ast_nodes    = require("./ast_nodes");
 
-const parser = new JeefoParser("ECMA Script 5", es5_tokenizer, es5_symbol_table);
+const parser = new JeefoParser("ECMA Script 5", es5_tokenizer, es5_ast_nodes);
 Object.keys(states_enum).forEach((key) => {
     parser.state.add(key, states_enum[key], key === "statement");
 });
 
 const delimiters = ['{'];
 
-function try_terminate (current_symbol, parser) {
-    if (current_symbol.end.line < parser.next_token.start.line) {
-        parser.terminate(current_symbol);
+function try_terminate (current_ast_node, parser) {
+    if (current_ast_node.end.line < parser.next_token.start.line) {
+        parser.terminate(current_ast_node);
     } else {
         parser.throw_unexpected_token();
     }
 }
 
 parser.onpreparation = parser => {
-    let current_symbol = null;
-    if (parser.current_symbol !== null && parser.current_symbol.id !== "Comment") {
-        current_symbol = parser.current_symbol;
+    let current_ast_node = null;
+    if (parser.current_ast_node !== null && parser.current_ast_node.id !== "Comment") {
+        current_ast_node = parser.current_ast_node;
     }
     ignore_comments(parser);
 
-    if (parser.next_token === null || current_symbol === null) { return; }
+    if (parser.next_token === null || current_ast_node === null) { return; }
 
-    switch (current_symbol.type) {
+    switch (current_ast_node.type) {
         case "Primitive" :
             if (parser.next_token.id === "Identifier" &&
-                parser.next_symbol_definition !== null &&
-                parser.next_symbol_definition.type === "Binary operator") {
+                parser.next_ast_node_definition !== null &&
+                parser.next_ast_node_definition.type === "Binary operator") {
                 break;
             }
 
             switch (parser.next_token.id) {
                 case "Number" :
                 case "Identifier" :
-                    try_terminate(current_symbol, parser);
+                    try_terminate(current_ast_node, parser);
                     break;
                 case "Delimiter" :
                     if (delimiters.includes(parser.next_token.value)) {
-                        try_terminate(current_symbol, parser);
+                        try_terminate(current_ast_node, parser);
                     }
                     break;
             }
@@ -69,76 +69,83 @@ parser.onpreparation = parser => {
 
 module.exports = parser;
 
+
+
+
+
+
+
+
 // ignore:start
 if (require.main === module) {
 
 // {{{1 print
-const print_symbol = (symbol, is_expression) => {
-    if (!symbol || ! symbol.start || ! symbol.end) {
-        console.log(symbol);
+const print_ast_node = (ast_node, is_expression) => {
+    if (!ast_node || ! ast_node.start || ! ast_node.end) {
+        console.log(ast_node);
         throw new Error(1);
     }
-    console.log(`code: \`${ parser.tokenizer.streamer.substring_from_token(symbol) }\``);
-    console.log(symbol.to_string());
+    console.log(`code: \`${ parser.tokenizer.streamer.substring_from_token(ast_node) }\``);
+    console.log(ast_node.to_string());
 
-    switch (symbol.type) {
+    switch (ast_node.type) {
         case "Declarator" :
-            print_symbol(symbol.identifier, true);
-            if (symbol.init) {
-                print_symbol(symbol.init, true);
+            print_ast_node(ast_node.identifier, true);
+            if (ast_node.init) {
+                print_ast_node(ast_node.init, true);
             }
-            if (symbol.left_comment) {
-                print_symbol(symbol.left_comment, true);
+            if (ast_node.left_comment) {
+                print_ast_node(ast_node.left_comment, true);
             }
-            if (symbol.right_comment) {
-                print_symbol(symbol.right_comment, true);
+            if (ast_node.right_comment) {
+                print_ast_node(ast_node.right_comment, true);
             }
             console.log(" NEXT ----------------------------------------");
             break;
         case "Declaration" :
-            switch (symbol.id) {
+            switch (ast_node.id) {
                 case "Varaible delcaration" :
-                    symbol.declarations.forEach(declarator => {
-                        print_symbol(declarator, true);
+                    ast_node.declarations.forEach(declarator => {
+                        print_ast_node(declarator, true);
                     });
                     break;
             }
             break;
         case "Statement" :
-            switch (symbol.id) {
+            switch (ast_node.id) {
                 case "Expression statement" :
-                    print_symbol(symbol.expression, true);
-                    if (symbol.pre_comment) {
-                        print_symbol(symbol.pre_comment, true);
+                    print_ast_node(ast_node.expression, true);
+                    if (ast_node.pre_comment) {
+                        print_ast_node(ast_node.pre_comment, true);
                     }
-                    if (symbol.post_comment) {
-                        print_symbol(symbol.post_comment, true);
+                    if (ast_node.post_comment) {
+                        print_ast_node(ast_node.post_comment, true);
                     }
                     break;
                 case "Return statement" :
-                    if (symbol.argument) {
-                        print_symbol(symbol.argument, true);
+                    if (ast_node.argument) {
+                        print_ast_node(ast_node.argument, true);
                     }
-                    if (symbol.pre_comment) {
-                        print_symbol(symbol.pre_comment, true);
+                    if (ast_node.pre_comment) {
+                        print_ast_node(ast_node.pre_comment, true);
                     }
                     break;
             }
             break;
         case "Binary operator" :
-            print_symbol(symbol.left, true);
-            print_symbol(symbol.right, true);
-            if (symbol.comment) {
-                print_symbol(symbol.comment, true);
+            print_ast_node(ast_node.left, true);
+            print_ast_node(ast_node.right, true);
+            if (ast_node.comment) {
+                print_ast_node(ast_node.comment, true);
             }
             break;
         case "Primitive" :
-            if (symbol.id === "Primitive wrapper") {
-                print_symbol(symbol.value, true);
+            if (ast_node.id === "Primitive wrapper") {
+                print_ast_node(ast_node.value, true);
             }
             break;
         default:
-            console.log(222, symbol.type);
+            console.log(222, ast_node.type);
     }
 
     if (! is_expression) {
@@ -157,11 +164,11 @@ process.exit();
 
 const fs = require("fs");
 const source = fs.readFileSync("./test", "utf8");
-const symbols = parser.parse(source);
+const ast_nodes = parser.parse(source);
 
 console.log("===========================");
-symbols.forEach(symbol => print_symbol(symbol));
-//console.log(parser.symbol_table.get_reserved_words());
+ast_nodes.forEach(ast_node => print_ast_node(ast_node));
+//console.log(parser.ast_nodes.get_reserved_words());
 
 if (true) {
     process.exit();

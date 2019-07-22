@@ -26,18 +26,18 @@ module.exports = {
 	precedence : 31,
 
     is         : (token, parser) => parser.current_state === states_enum.statement,
-	initialize : (symbol, current_token, parser) => {
+	initialize : (ast_node, current_token, parser) => {
         let inner_comment = null;
         const pre_comment = get_pre_comment(parser);
 
         // Statement
         parser.prepare_next_state(null, true);
-        const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
         // while keyword
         parser.prepare_next_state(null, true);
         parser.expect("while", parser => parser.next_token.value === "while");
-        inner_comment = parser.current_symbol;
+        inner_comment = parser.current_ast_node;
 
         // Surrounded expression
         parser.prepare_next_state(null, true);
@@ -48,16 +48,16 @@ module.exports = {
         parser.prepare_next_state();
         const asi = parser.next_token === null || parser.next_token.value !== ';';
 
-        symbol.pre_comment   = pre_comment;
-        symbol.statement     = statement;
-        symbol.inner_comment = inner_comment;
-        symbol.do_token      = current_token;
-        symbol.expression    = surrounded_expression;
-        symbol.post_comment  = asi ? null : parser.current_symbol;
-        symbol.ASI           = asi;
-        symbol.start         = get_start_position(pre_comment, current_token);
-        symbol.end           = asi ? surrounded_expression.end : parser.next_token.end;
+        ast_node.pre_comment   = pre_comment;
+        ast_node.statement     = statement;
+        ast_node.inner_comment = inner_comment;
+        ast_node.do_token      = current_token;
+        ast_node.expression    = surrounded_expression;
+        ast_node.post_comment  = asi ? null : parser.current_ast_node;
+        ast_node.ASI           = asi;
+        ast_node.start         = get_start_position(pre_comment, current_token);
+        ast_node.end           = asi ? surrounded_expression.end : parser.next_token.end;
 
-        parser.terminate(symbol);
+        parser.terminate(ast_node);
     }
 };

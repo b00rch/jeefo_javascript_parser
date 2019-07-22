@@ -18,8 +18,8 @@
 const states_enum        = require("./enums/states_enum"),
       get_start_position = require("./helpers/get_start_position");
 
-module.exports = function register_delimiter_symbol_definitions (symbol_table) {
-    symbol_table.register_symbol_definition({
+module.exports = function register_delimiter_ast_node_definitions (es5_ast_nodes) {
+    es5_ast_nodes.register_ast_node_definition({
         id         : "Delimiter",
         type       : "Delimiter",
         precedence : -1,
@@ -36,16 +36,16 @@ module.exports = function register_delimiter_symbol_definitions (symbol_table) {
             }
             return false;
         },
-        initialize : (symbol, current_token, parser) => {
+        initialize : (ast_node, current_token, parser) => {
             let pre_comment = null;
-            if (parser.current_symbol !== null && parser.current_symbol.id === "Comment") {
-                pre_comment = parser.current_symbol;
+            if (parser.current_ast_node !== null && parser.current_ast_node.id === "Comment") {
+                pre_comment = parser.current_ast_node;
             }
 
-            symbol.pre_comment = pre_comment;
-            symbol.token       = current_token;
-            symbol.start       = get_start_position(pre_comment, current_token);
-            symbol.end         = current_token.end;
+            ast_node.pre_comment = pre_comment;
+            ast_node.token       = current_token;
+            ast_node.start       = get_start_position(pre_comment, current_token);
+            ast_node.end         = current_token.end;
         }
     });
 };

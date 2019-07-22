@@ -15,10 +15,10 @@
 
 // ignore:end
 
-const SymbolDefinition    = require("@jeefo/parser/src/symbol_definition"),
+const ASTNodeDefinition    = require("@jeefo/parser/src/ast_node_definition"),
       operator_definition = require("./operator_definition");
 
-module.exports = new SymbolDefinition({
+module.exports = new ASTNodeDefinition({
     id         : "Keyword",
     type       : "Keyword",
     precedence : -1,

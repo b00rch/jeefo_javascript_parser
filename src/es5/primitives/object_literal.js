@@ -15,7 +15,7 @@
 
 // ignore:end
 
-const SymbolDefinition       = require("@jeefo/parser/src/symbol_definition"),
+const ASTNodeDefinition      = require("@jeefo/parser/src/ast_node_definition"),
       precedence_enum        = require("../enums/precedence_enum"),
       keyword_definition     = require("../common/keyword_definition"),
       is_expression          = require("../helpers/is_expression"),
@@ -23,7 +23,7 @@ const SymbolDefinition       = require("@jeefo/parser/src/symbol_definition"),
       get_current_state_name = require("../helpers/get_current_state_name");
 
 // {{{1 Property name
-const property_name_definition = new SymbolDefinition({
+const property_name_definition = new ASTNodeDefinition({
     id         : "Property name",
     type       : "Expression",
     precedence : -1,
@@ -35,110 +35,110 @@ const property_name_definition = new SymbolDefinition({
 // {{{1 get_property(parser)
 function get_property (parser) {
     parser.expect("PropertyName", is_property_name);
-    return property_name_definition.generate_new_symbol(parser);
+    return property_name_definition.generate_new_ast_node(parser);
 }
 
 // {{{1 Getter
-const getter_definition = new SymbolDefinition({
+const getter_definition = new ASTNodeDefinition({
     id         : "Getter",
     type       : "Expression",
     precedence : -1,
 
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
-        const keyword = keyword_definition.generate_new_symbol(parser);
+    initialize : (ast_node, current_token, parser) => {
+        const keyword = keyword_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
         const property = get_property(parser);
 
         parser.prepare_next_state("delimiter", true);
         parser.expect('(', parser => parser.next_token.value === '(');
-        const open_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const open_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("delimiter", true);
         parser.expect(')', parser => parser.next_token.value === ')');
-        const close_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const close_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("block_statement", true);
         parser.expect('{', parser => parser.next_token.value === '{');
-        const body = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const body = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.keyword           = keyword;
-        symbol.property          = property;
-        symbol.open_parenthesis  = open_parenthesis;
-        symbol.close_parenthesis = close_parenthesis;
-        symbol.body              = body;
-        symbol.start             = keyword.start;
-        symbol.end               = body.end;
+        ast_node.keyword           = keyword;
+        ast_node.property          = property;
+        ast_node.open_parenthesis  = open_parenthesis;
+        ast_node.close_parenthesis = close_parenthesis;
+        ast_node.body              = body;
+        ast_node.start             = keyword.start;
+        ast_node.end               = body.end;
 
         parser.prepare_next_state("expression", true);
     }
 });
 
 // {{{1 Setter
-const setter_definition = new SymbolDefinition({
+const setter_definition = new ASTNodeDefinition({
     id         : "Setter",
     type       : "Expression",
     precedence : -1,
 
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
-        const keyword = keyword_definition.generate_new_symbol(parser);
+    initialize : (ast_node, current_token, parser) => {
+        const keyword = keyword_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
         const property = get_property(parser);
 
         parser.prepare_next_state("delimiter", true);
         parser.expect('(', parser => parser.next_token.value === '(');
-        const open_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const open_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
-        parser.expect("identifier", parser => parser.next_symbol_definition.id === "Identifier");
-        const parameter = parser.next_symbol_definition.generate_new_symbol(parser);
+        parser.expect("identifier", parser => parser.next_ast_node_definition.id === "Identifier");
+        const parameter = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("delimiter", true);
         parser.expect(')', parser => parser.next_token.value === ')');
-        const close_parenthesis = parser.next_symbol_definition.generate_new_symbol(parser);
+        const close_parenthesis = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("block_statement", true);
         parser.expect('{', parser => parser.next_token.value === '{');
-        const body = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const body = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.keyword           = keyword;
-        symbol.property          = property;
-        symbol.open_parenthesis  = open_parenthesis;
-        symbol.parameter         = parameter;
-        symbol.close_parenthesis = close_parenthesis;
-        symbol.body              = body;
-        symbol.start             = keyword.start;
-        symbol.end               = body.end;
+        ast_node.keyword           = keyword;
+        ast_node.property          = property;
+        ast_node.open_parenthesis  = open_parenthesis;
+        ast_node.parameter         = parameter;
+        ast_node.close_parenthesis = close_parenthesis;
+        ast_node.body              = body;
+        ast_node.start             = keyword.start;
+        ast_node.end               = body.end;
 
         parser.prepare_next_state("expression", true);
     }
 });
 
 // {{{1 Property assignment
-const property_assignment = new SymbolDefinition({
+const property_assignment = new ASTNodeDefinition({
     id         : "Property assignment",
     type       : "Expression",
     precedence : -1,
 
     is         : () => {},
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         const property = get_property(parser);
 
         parser.prepare_next_state("delimiter", true);
         parser.expect(':', parser => parser.next_token.value === ':');
-        const delimiter = parser.next_symbol_definition.generate_new_symbol(parser);
+        const delimiter = parser.next_ast_node_definition.generate_new_ast_node(parser);
 
         parser.prepare_next_state("expression", true);
-        const initializer = parser.get_next_symbol(precedence_enum.COMMA);
+        const initializer = parser.get_next_ast_node(precedence_enum.COMMA);
 
-        symbol.property    = property;
-        symbol.delimiter   = delimiter;
-        symbol.initializer = initializer;
-        symbol.start       = property.start;
-        symbol.end         = initializer.end;
+        ast_node.property    = property;
+        ast_node.delimiter   = delimiter;
+        ast_node.initializer = initializer;
+        ast_node.start       = property.start;
+        ast_node.end         = initializer.end;
     }
 });
 
@@ -154,13 +154,13 @@ function get_members (parser) {
 
         switch (parser.next_token.value) {
             case "get" :
-                members.push(getter_definition.generate_new_symbol(parser));
+                members.push(getter_definition.generate_new_ast_node(parser));
                 break;
             case "set" :
-                members.push(setter_definition.generate_new_symbol(parser));
+                members.push(setter_definition.generate_new_ast_node(parser));
                 break;
             default:
-                members.push(property_assignment.generate_new_symbol(parser));
+                members.push(property_assignment.generate_new_ast_node(parser));
         }
 
         if (parser.next_token === null) {
@@ -170,7 +170,7 @@ function get_members (parser) {
         switch (parser.next_token.value) {
             case ',' :
                 parser.change_state("delimiter");
-                members.push(parser.next_symbol_definition.generate_new_symbol(parser));
+                members.push(parser.next_ast_node_definition.generate_new_ast_node(parser));
 
                 parser.prepare_next_state("expression", true);
                 break;
@@ -191,18 +191,18 @@ module.exports = {
     precedence : precedence_enum.PRIMITIVE,
 
     is         : (token, parser) => token.value === '{' && is_expression(parser),
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         const expression_name = get_current_state_name(parser);
 
         parser.change_state("delimiter");
 
-        symbol.open_curly_bracket  = parser.next_symbol_definition.generate_new_symbol(parser);
-        symbol.members             = get_members(parser);
-        symbol.close_curly_bracket = parser.next_symbol_definition.generate_new_symbol(parser);
-        symbol.start               = symbol.open_curly_bracket.start;
-        symbol.end                 = symbol.close_curly_bracket.end;
+        ast_node.open_curly_bracket  = parser.next_ast_node_definition.generate_new_ast_node(parser);
+        ast_node.members             = get_members(parser);
+        ast_node.close_curly_bracket = parser.next_ast_node_definition.generate_new_ast_node(parser);
+        ast_node.start               = ast_node.open_curly_bracket.start;
+        ast_node.end                 = ast_node.close_curly_bracket.end;
 
         parser.change_state(expression_name);
-        parser.prepare_next_symbol_definition();
+        parser.prepare_next_ast_node_definition();
     }
 };

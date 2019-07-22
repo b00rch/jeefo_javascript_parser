@@ -14,6 +14,6 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 // ignore:end
 
-module.exports = function register_declarations (symbol_table) {
-    symbol_table.register_reserved_word("function" , require("./function_declaration"));
+module.exports = function register_declarations (es5_ast_nodes) {
+    es5_ast_nodes.register_reserved_word("function" , require("./function_declaration"));
 };

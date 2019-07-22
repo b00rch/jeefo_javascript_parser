@@ -25,7 +25,7 @@ module.exports = {
 	precedence : 31,
 
 	is         : (token, parser) => parser.current_state === states_enum.statement,
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         let asi        = true,
             end        = current_token.end,
             expression = null;
@@ -36,7 +36,7 @@ module.exports = {
             parser.throw_unexpected_token("Illegal newline after throw");
         } else {
             parser.expect("expression", parser => parser.next_token.value !== ';');
-            expression = parser.get_next_symbol(precedence_enum.TERMINATION);
+            expression = parser.get_next_ast_node(precedence_enum.TERMINATION);
             if (parser.next_token && parser.next_token.value === ';') {
                 asi = false;
                 end = parser.next_token.end;
@@ -45,12 +45,12 @@ module.exports = {
             }
         }
 
-        symbol.expression  = expression;
-        symbol.ASI         = asi;
-        symbol.pre_comment = pre_comment;
-        symbol.start       = get_start_position(pre_comment, current_token);
-        symbol.end         = end;
+        ast_node.expression  = expression;
+        ast_node.ASI         = asi;
+        ast_node.pre_comment = pre_comment;
+        ast_node.start       = get_start_position(pre_comment, current_token);
+        ast_node.end         = end;
 
-        parser.terminate(symbol);
+        parser.terminate(ast_node);
     }
 };

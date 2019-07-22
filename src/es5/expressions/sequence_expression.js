@@ -15,11 +15,11 @@
 
 // ignore:end
 
-const precedence_enum             = require("../enums/precedence_enum"),
-      is_expression               = require("../helpers/is_expression"),
-      get_expression              = require("../helpers/get_expression"),
-      get_current_state_name      = require("../helpers/get_current_state_name"),
-      get_last_non_comment_symbol = require("../helpers/get_last_non_comment_symbol");
+const precedence_enum               = require("../enums/precedence_enum"),
+      is_expression                 = require("../helpers/is_expression"),
+      get_expression                = require("../helpers/get_expression"),
+      get_current_state_name        = require("../helpers/get_current_state_name"),
+      get_last_non_comment_ast_node = require("../helpers/get_last_non_comment_ast_node");
 
 module.exports = {
 	id         : "Sequence expression",
@@ -29,14 +29,14 @@ module.exports = {
 	is : (token, parser) => {
         return token.value === ','
             && is_expression(parser)
-            && get_last_non_comment_symbol(parser) !== null;
+            && get_last_non_comment_ast_node(parser) !== null;
     },
-    initialize : (symbol, current_token, parser) => {
-        const expressions     = [get_last_non_comment_symbol(parser, true)];
+    initialize : (ast_node, current_token, parser) => {
+        const expressions     = [get_last_non_comment_ast_node(parser, true)];
         const expression_name = get_current_state_name(parser);
 
         parser.change_state("delimiter");
-        expressions.push(parser.next_symbol_definition.generate_new_symbol(parser));
+        expressions.push(parser.next_ast_node_definition.generate_new_ast_node(parser));
         parser.prepare_next_state(expression_name, true);
 
         LOOP:
@@ -52,7 +52,7 @@ module.exports = {
             switch (parser.next_token.value) {
                 case ',' :
                     parser.change_state("delimiter");
-                    expressions.push(parser.next_symbol_definition.generate_new_symbol(parser));
+                    expressions.push(parser.next_ast_node_definition.generate_new_ast_node(parser));
 
                     parser.prepare_next_state(expression_name, true);
                     break;
@@ -63,10 +63,10 @@ module.exports = {
             }
         }
 
-        symbol.expressions = expressions;
-        symbol.start       = expressions[0].start;
-        symbol.end         = expressions[expressions.length - 1].end;
-        console.log(symbol);
+        ast_node.expressions = expressions;
+        ast_node.start       = expressions[0].start;
+        ast_node.end         = expressions[expressions.length - 1].end;
+        // console.log(ast_node);
         process.exit();
     }
 };

@@ -24,17 +24,17 @@ module.exports = {
     precedence : 31,
 
     is         : (token, parser) => parser.current_state === states_enum.labelled_statement,
-    initialize : (symbol, current_token, parser) => {
-        const identifier = parser.current_symbol.identifier,
-              delimiter  = parser.current_symbol.delimiter;
+    initialize : (ast_node, current_token, parser) => {
+        const identifier = parser.current_ast_node.identifier,
+              delimiter  = parser.current_ast_node.delimiter;
 
         parser.prepare_next_state(null, true);
-        const statement = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const statement = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.identifier = identifier;
-        symbol.delimiter  = delimiter;
-        symbol.statement  = statement;
-        symbol.start      = identifier.start;
-        symbol.end        = statement.end;
+        ast_node.identifier = identifier;
+        ast_node.delimiter  = delimiter;
+        ast_node.statement  = statement;
+        ast_node.start      = identifier.start;
+        ast_node.end        = statement.end;
     }
 };

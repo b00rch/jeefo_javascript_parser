@@ -24,12 +24,12 @@ module.exports = {
     precedence : 1,
 
     is         : (token, parser) => token.value === ';' && parser.current_state === states_enum.statement,
-    initialize : (symbol, current_token, parser) => {
-        symbol.pre_comment = get_pre_comment(parser);
-        symbol.token       = current_token;
-        symbol.start       = get_start_position(symbol.pre_comment, current_token);
-        symbol.end         = current_token.end;
+    initialize : (ast_node, current_token, parser) => {
+        ast_node.pre_comment = get_pre_comment(parser);
+        ast_node.token       = current_token;
+        ast_node.start       = get_start_position(ast_node.pre_comment, current_token);
+        ast_node.end         = current_token.end;
 
-        parser.terminate(symbol);
+        parser.terminate(ast_node);
     }
 };

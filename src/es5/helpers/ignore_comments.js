@@ -16,13 +16,13 @@ _._._._._._._._._._._._._._._._._._._._._.*/
 
 module.exports = function ignore_comments (parser) {
 	while (parser.next_token) {
-        if (parser.next_symbol_definition === null) { break; }
+        if (parser.next_ast_node_definition === null) { break; }
 
-        if (parser.next_symbol_definition.id === "Comment") {
-            parser.current_symbol = parser.next_symbol_definition.generate_new_symbol(parser);
-            parser.previous_symbols.push(parser.current_symbol);
+        if (parser.next_ast_node_definition.id === "Comment") {
+            parser.current_ast_node = parser.next_ast_node_definition.generate_new_ast_node(parser);
+            parser.previous_ast_nodes.push(parser.current_ast_node);
 
-            parser.prepare_next_symbol_definition();
+            parser.prepare_next_ast_node_definition();
         } else {
             break;
         }

@@ -34,22 +34,22 @@ module.exports = {
         }
         return false;
     },
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         let name = null, expression_name;
         const pre_comment             = get_pre_comment(parser),
               is_function_declaration = parser.current_state === states_enum.statement;
 
         if (! is_function_declaration) {
-            symbol.id       = "Function expression";
-            symbol.type     = "Expression";
+            ast_node.id       = "Function expression";
+            ast_node.type     = "Expression";
             expression_name = get_current_state_name(parser);
         }
 
         parser.prepare_next_state("expression", true);
 
         if (is_function_declaration || parser.next_token.id === "Identifier") {
-            parser.expect("identifier", parser => parser.next_symbol_definition.id === "Identifier");
-            name = parser.next_symbol_definition.generate_new_symbol(parser);
+            parser.expect("identifier", parser => parser.next_ast_node_definition.id === "Identifier");
+            name = parser.next_ast_node_definition.generate_new_ast_node(parser);
             parser.prepare_next_state("expression", true);
         }
 
@@ -58,17 +58,17 @@ module.exports = {
 
         parser.prepare_next_state("block_statement", true);
         parser.expect('{', parser => parser.next_token.value === '{');
-        const body = parser.get_next_symbol(precedence_enum.TERMINATION);
+        const body = parser.get_next_ast_node(precedence_enum.TERMINATION);
 
-        symbol.name        = name;
-        symbol.parameters  = parameters;
-        symbol.body        = body;
-        symbol.pre_comment = pre_comment;
-        symbol.start       = get_start_position(pre_comment, current_token);
-        symbol.end         = body.end;
+        ast_node.name        = name;
+        ast_node.parameters  = parameters;
+        ast_node.body        = body;
+        ast_node.pre_comment = pre_comment;
+        ast_node.start       = get_start_position(pre_comment, current_token);
+        ast_node.end         = body.end;
 
         if (is_function_declaration) {
-            parser.terminate(symbol);
+            parser.terminate(ast_node);
         } else {
             parser.prepare_next_state(expression_name);
         }

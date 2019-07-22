@@ -25,7 +25,7 @@ module.exports = {
 	precedence : 31,
 
 	is         : (token, parser) => parser.current_state === states_enum.statement,
-    initialize : (symbol, current_token, parser) => {
+    initialize : (ast_node, current_token, parser) => {
         let asi          = true,
             end          = current_token.end,
             post_comment = null;
@@ -41,12 +41,12 @@ module.exports = {
             }
         }
 
-        symbol.ASI          = asi;
-        symbol.pre_comment  = pre_comment;
-        symbol.post_comment = post_comment;
-        symbol.start        = get_start_position(pre_comment, current_token);
-        symbol.end          = end;
+        ast_node.ASI          = asi;
+        ast_node.pre_comment  = pre_comment;
+        ast_node.post_comment = post_comment;
+        ast_node.start        = get_start_position(pre_comment, current_token);
+        ast_node.end          = end;
 
-        parser.terminate(symbol);
+        parser.terminate(ast_node);
     }
 };

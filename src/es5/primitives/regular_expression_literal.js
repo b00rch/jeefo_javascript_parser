@@ -115,13 +115,13 @@ module.exports = {
 
     is : (token, parser) => {
         return token.value === '/'
-            && parser.current_symbol === null
+            && parser.current_ast_node === null
             && is_expression(parser);
     },
-    initialize : (symbol, current_token, parser) => {
-        symbol.pattern = parse_regular_expression(parser, current_token.start.index);
-        symbol.flags   = parse_regular_expression_flags(parser);
-        symbol.start   = current_token.start;
-        symbol.end     = parser.tokenizer.streamer.get_cursor();
+    initialize : (ast_node, current_token, parser) => {
+        ast_node.pattern = parse_regular_expression(parser, current_token.start.index);
+        ast_node.flags   = parse_regular_expression_flags(parser);
+        ast_node.start   = current_token.start;
+        ast_node.end     = parser.tokenizer.streamer.get_cursor();
     }
 };
